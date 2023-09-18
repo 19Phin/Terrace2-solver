@@ -1,7 +1,10 @@
 # Terrace2-solver
-Just a program I whipped up to help debug the map The Terrace 2: Worlds.
 
-Right-click to cycle between must be on (black) must be off (white) and neither (grey).
-Left-click to cycle between dotted square options
-Number keys to change color, by default adds a "+". (which number doesn't matter as long as it's the same for each color)
-Backtick "`" and number key to add dice block, must have a color first.
+Terrace2-solver is a simple utility program I created to aid in debugging maps for The Terrace 2: Worlds.
+
+## Features
+
+- **Right-click:** Cycle between "must be on" (black), "must be off" (white), and "neither" (grey).
+- **Left-click:** Cycle between different dotted square options.
+- **Number keys:** Change the color, with a default addition of "+" (the specific number doesn't matter, as long as it's the same for each color).
+- **Backtick (\`) and number key:** Add a dice block; note that you must select a color first.
