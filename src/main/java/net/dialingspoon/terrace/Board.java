@@ -81,6 +81,7 @@ public class Board {
 
             for (int[] tilePos : region.getTiles()) {
                 Tile tile = getTile(tilePos[0], tilePos[1]);
+                int touching = tile.getTouching();
 
                 if (tile.getNumber() != 0) {
                     if (regionColor == -1) {
@@ -89,16 +90,33 @@ public class Board {
                         return false; // Different color in the same region
                     }
                     sumOfNumbers += tile.getNumber();
-                } else if (tile.getColor() != 0) {
+                    boolean otherTilesWithSameColorAndNoNumberExist = region.getTiles().stream()
+                            .filter(pos -> !(pos[0] == tilePos[0] && pos[1] == tilePos[1])) // Exclude the current tile
+                            .map(pos -> getTile(pos[0], pos[1]))
+                            .anyMatch(otherTile -> otherTile.getColor() == tile.getColor() && otherTile.getNumber() == 0);
+                    if (otherTilesWithSameColorAndNoNumberExist) colorCount.put(tile.getColor(), colorCount.getOrDefault(tile.getColor(), 0) + 1);
+                } else if (tile.getColor() != 0 && touching == -1) {
                     colorCount.put(tile.getColor(), colorCount.getOrDefault(tile.getColor(), 0) + 1);
                 }
 
                 // Check adjacent tiles if tile.getTouching() is not -1
-                int touching = tile.getTouching();
                 if (touching != -1) {
                     int adjacentOnCount = countAdjacentOnTiles(tilePos[0], tilePos[1], tile.isOn());
                     if (adjacentOnCount != touching) {
                         return false; // Invalid number of adjacent tiles
+                    }
+                    if (tile.getColor() != 0) {
+                        boolean otherTilesWithSameColorAndNoNumberExist = region.getTiles().stream()
+                                .filter(pos -> !(pos[0] == tilePos[0] && pos[1] == tilePos[1])) // Exclude the current tile
+                                .map(pos -> getTile(pos[0], pos[1]))
+                                .anyMatch(otherTile -> otherTile.getColor() == tile.getColor() && otherTile.getNumber() == 0);
+                        if (otherTilesWithSameColorAndNoNumberExist) colorCount.put(tile.getColor(), colorCount.getOrDefault(tile.getColor(), 0) + 1);
+
+                        otherTilesWithSameColorAndNoNumberExist = region.getTiles().stream()
+                                .filter(pos -> !(pos[0] == tilePos[0] && pos[1] == tilePos[1])) // Exclude the current tile
+                                .map(pos -> getTile(pos[0], pos[1]))
+                                .anyMatch(otherTile -> otherTile.getColor() == tile.getColor() + 1 && otherTile.getNumber() == 0);
+                        if (otherTilesWithSameColorAndNoNumberExist) colorCount.put(tile.getColor(), colorCount.getOrDefault(tile.getColor(), 0) + 2);
                     }
                 }
             }
