@@ -159,8 +159,8 @@ public class BoardDisplayUI extends Application {
             setStyle("-fx-background-color: " + currentColor + "; -fx-border-color: gray;");
             setPrefSize(40, 40); // Set the cell's preferred size
 
-            label1.setTextFill(Color.BLACK); // Set text fill color for the first number
-            label2.setTextFill(Color.RED); // Set text fill color for the second number
+            label1.setTextFill(Color.DARKBLUE); // Set text fill color for the first number
+            label2.setTextFill(Color.DARKBLUE); // Set text fill color for the second number
             label1.setTranslateX(-10);
             label2.setTranslateX(10);
 
@@ -262,9 +262,10 @@ public class BoardDisplayUI extends Application {
             getChildren().clear();
             dotCount = -1;
             if (displayedNumber != 0) {
-                displayedNumberWithShift = 0;
                 getChildren().add(label1);
                 if (displayedNumberWithShift > 0) getChildren().add(label2);
+            } else {
+                displayedNumberWithShift = 0;
             }
         }
 
