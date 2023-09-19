@@ -205,68 +205,76 @@ public class BoardDisplayUI extends Application {
         public void toggleDot() {
             // Toggle between adding yellow dots and clearing them
             if (dotCount < 4) {
-                if (dotCount == -1) {
-                    Circle purpleDot = new Circle(5, Color.PURPLE);
-                    purpleDot.setTranslateX(15);
-                    purpleDot.setTranslateY(15);
-                    getChildren().add(purpleDot);
-                    purpleDot = new Circle(5, Color.PURPLE);
-                    purpleDot.setTranslateX(-15);
-                    purpleDot.setTranslateY(15);
-                    getChildren().add(purpleDot);
-                    purpleDot = new Circle(5, Color.PURPLE);
-                    purpleDot.setTranslateX(15);
-                    purpleDot.setTranslateY(-15);
-                    getChildren().add(purpleDot);
-                    purpleDot = new Circle(5, Color.PURPLE);
-                    purpleDot.setTranslateX(-15);
-                    purpleDot.setTranslateY(-15);
-                    getChildren().add(purpleDot);
-                    dotCount++;
-                } else {
-                    // Add a yellow dot in a specific corner
-                    Circle yellowDot = new Circle(5, Color.YELLOW);
-                    if (dotCount == 0) {
-                        // Top-left corner
-                        yellowDot.setTranslateX(15);
-                        yellowDot.setTranslateY(-15);
-                        getChildren().add(yellowDot);
-                    } else if (dotCount == 1) {
-                        // Bottom-right corner
-                        yellowDot.setTranslateX(15); // Adjust position
-                        yellowDot.setTranslateY(15);
-                        getChildren().add(yellowDot);
-                    } else if (dotCount == 2) {
-                        // Bottom-left corner
-                        yellowDot.setTranslateX(-15);
-                        yellowDot.setTranslateY(15); // Adjust position
-                        getChildren().add(yellowDot);
-                    } else if (dotCount == 3) {
-                        // Top-right corner
-                        yellowDot.setTranslateX(-15); // Adjust position
-                        yellowDot.setTranslateY(-15);
-                        getChildren().add(yellowDot);
-                    }
-                    dotCount++;
-                }
+                dotCount++;
+                getChildren().clear();
+                showDot();
+
             } else {
                 // Clear all yellow dots
                 getChildren().clear();
                 dotCount = -1;
             }
+            if (displayedNumber != 0) {
+                getChildren().add(label1);
+                if (displayedNumberWithShift != 0) getChildren().add(label2);
+            }
         }
+
+        public void showDot() {
+            // Toggle between adding yellow dots and clearing them
+            Circle purpleDot = new Circle(5, Color.PURPLE);
+            purpleDot.setTranslateX(15);
+            purpleDot.setTranslateY(15);
+            getChildren().add(purpleDot);
+            purpleDot = new Circle(5, Color.PURPLE);
+            purpleDot.setTranslateX(-15);
+            purpleDot.setTranslateY(15);
+            getChildren().add(purpleDot);
+            purpleDot = new Circle(5, Color.PURPLE);
+            purpleDot.setTranslateX(15);
+            purpleDot.setTranslateY(-15);
+            getChildren().add(purpleDot);
+            purpleDot = new Circle(5, Color.PURPLE);
+            purpleDot.setTranslateX(-15);
+            purpleDot.setTranslateY(-15);
+            getChildren().add(purpleDot);
+            // Add a yellow dot in a specific corner
+            Circle yellowDot = new Circle(5, Color.YELLOW);
+            if (dotCount == 1) {
+                // Top-left corner
+                yellowDot.setTranslateX(15);
+                yellowDot.setTranslateY(-15);
+                getChildren().add(yellowDot);
+            } else if (dotCount == 2) {
+                // Bottom-right corner
+                yellowDot.setTranslateX(15); // Adjust position
+                yellowDot.setTranslateY(15);
+                getChildren().add(yellowDot);
+            } else if (dotCount == 3) {
+                // Bottom-left corner
+                yellowDot.setTranslateX(-15);
+                yellowDot.setTranslateY(15); // Adjust position
+                getChildren().add(yellowDot);
+            } else if (dotCount == 4) {
+                // Top-right corner
+                yellowDot.setTranslateX(-15); // Adjust position
+                yellowDot.setTranslateY(-15);
+                getChildren().add(yellowDot);
+            }
+        }
+
         public void setDisplayedNumber(int number) {
             // Set and display the specified number on the cell
             displayedNumber = number;
             label1.setText(Integer.toString(displayedNumber));
             getChildren().clear();
-            dotCount = -1;
             if (displayedNumber != 0) {
                 getChildren().add(label1);
-                if (displayedNumberWithShift > 0) getChildren().add(label2);
+                if (displayedNumberWithShift != 0) getChildren().add(label2);
             } else {
                 displayedNumberWithShift = 0;
             }
+            if (dotCount != -1) showDot();
         }
 
         public void setDisplayedNumberWithShift(int number) {
@@ -275,11 +283,11 @@ public class BoardDisplayUI extends Application {
             displayedNumberWithShift = number;
             label2.setText(Integer.toString(displayedNumberWithShift));
             getChildren().clear();
-            dotCount = -1;
             getChildren().add(label1);
             if (displayedNumberWithShift != 0) {
                 getChildren().add(label2);
             }
+            if (dotCount != -1) showDot();
         }
 
         public String getCurrentColor() {

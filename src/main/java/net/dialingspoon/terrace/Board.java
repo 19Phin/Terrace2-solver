@@ -72,94 +72,122 @@ public class Board {
             }
         }
 
+        // Memoization for region validation
+        Map<Region, Boolean> regionValidationCache = new HashMap<>();
+
         // Check if tiles with the same region have matching colors and non-zero numbers
         identifyRegions();
         for (Region region : regions) {
-            int regionColor = -1; // Initialize region color
-            Map<Integer, Integer> colorCount = new HashMap<>(); // Map to count colors
-            int sumOfNumbers = 0; // Sum of numbers in the region
-
-            for (int[] tilePos : region.getTiles()) {
-                Tile tile = getTile(tilePos[0], tilePos[1]);
-                int touching = tile.getTouching();
-
-                if (tile.getNumber() != 0) {
-                    if (regionColor == -1) {
-                        regionColor = tile.getColor();
-                    } else if (regionColor != tile.getColor()) {
-                        return false; // Different color in the same region
-                    }
-                    sumOfNumbers += tile.getNumber();
-                    boolean otherTilesWithSameColorAndNoNumberExist = region.getTiles().stream()
-                            .filter(pos -> !(pos[0] == tilePos[0] && pos[1] == tilePos[1])) // Exclude the current tile
-                            .map(pos -> getTile(pos[0], pos[1]))
-                            .anyMatch(otherTile -> otherTile.getColor() == tile.getColor() && otherTile.getNumber() == 0);
-                    if (otherTilesWithSameColorAndNoNumberExist) colorCount.put(tile.getColor(), colorCount.getOrDefault(tile.getColor(), 0) + 1);
-                } else if (tile.getColor() != 0 && touching == -1) {
-                    colorCount.put(tile.getColor(), colorCount.getOrDefault(tile.getColor(), 0) + 1);
-                }
-
-                // Check adjacent tiles if tile.getTouching() is not -1
-                if (touching != -1) {
-                    int adjacentOnCount = countAdjacentOnTiles(tilePos[0], tilePos[1], tile.isOn());
-                    if (adjacentOnCount != touching) {
-                        return false; // Invalid number of adjacent tiles
-                    }
-                    if (tile.getColor() != 0) {
-                        boolean otherTilesWithSameColorAndNoNumberExist = region.getTiles().stream()
-                                .filter(pos -> !(pos[0] == tilePos[0] && pos[1] == tilePos[1])) // Exclude the current tile
-                                .map(pos -> getTile(pos[0], pos[1]))
-                                .anyMatch(otherTile -> otherTile.getColor() == tile.getColor() && otherTile.getNumber() == 0);
-                        if (otherTilesWithSameColorAndNoNumberExist) colorCount.put(tile.getColor(), colorCount.getOrDefault(tile.getColor(), 0) + 1);
-
-                        otherTilesWithSameColorAndNoNumberExist = region.getTiles().stream()
-                                .filter(pos -> !(pos[0] == tilePos[0] && pos[1] == tilePos[1])) // Exclude the current tile
-                                .map(pos -> getTile(pos[0], pos[1]))
-                                .anyMatch(otherTile -> otherTile.getColor() == tile.getColor() + 1 && otherTile.getNumber() == 0);
-                        if (otherTilesWithSameColorAndNoNumberExist) colorCount.put(tile.getColor(), colorCount.getOrDefault(tile.getColor(), 0) + 2);
-                    }
-                }
+            boolean validationData;
+            if (regionValidationCache.containsKey(region)) validationData = regionValidationCache.get(region);
+            else{
+                validationData = validateRegion(region);
+                regionValidationCache.put(region, validationData);
             }
 
-            for (int count : colorCount.values()) {
-                if (count == 1 || count >= 3) {
-                    return false; // One or three or more tiles with the same color in the region
-                }
-            }
-
-            if (sumOfNumbers != region.getTiles().size() && sumOfNumbers != 0) {
-                return false; // Sum of numbers in the region is not equal to the number of tiles
+            if (!validationData) {
+                return false; // Early termination if region is invalid
             }
         }
 
         return true;
     }
 
+    private boolean validateRegion(Region region) {
+        int regionColor = -1; // Initialize region color
+        Map<Integer, Integer> colorCount = new HashMap<>(); // Map to count colors
+        int sumOfNumbers = 0; // Sum of numbers in the region
+
+        // Store frequently used values to minimize recalculation
+        List<int[]> tilesInRegion = region.getTiles();
+        int regionSize = tilesInRegion.size();
+        Tile[] regionTiles = new Tile[regionSize];
+        for (int i = 0; i < regionSize; i++) {
+            int[] tilePos = tilesInRegion.get(i);
+            regionTiles[i] = getTile(tilePos[0], tilePos[1]);
+        }
+
+        for (int i = 0; i < regionSize; i++) {
+            Tile tile = regionTiles[i];
+            int touching = tile.getTouching();
+
+            if (tile.getNumber() != 0) {
+                if (regionColor == -1) {
+                    regionColor = tile.getColor();
+                } else if (regionColor != tile.getColor()) {
+                    return false; // Early termination if different color in the same region
+                }
+                sumOfNumbers += tile.getNumber();
+
+                // Check if other tiles with the same color and no number exist
+                for (int j = 0; j < regionSize; j++) {
+                    if (i != j) {
+                        Tile otherTile = regionTiles[j];
+                        if (otherTile.getColor() == tile.getColor() && otherTile.getNumber() == 0 && otherTile.getTouching() == -1) {
+                            colorCount.put(tile.getColor(), colorCount.getOrDefault(tile.getColor(), 0) + 1);
+                            break; // No need to check further for this color
+                        }
+                    }
+                }
+            } else if (tile.getColor() != 0 && touching == -1) {
+                colorCount.put(tile.getColor(), colorCount.getOrDefault(tile.getColor(), 0) + 1);
+            }
+
+            // Check adjacent tiles if tile.getTouching() is not -1
+            if (touching != -1) {
+                int adjacentOnCount = countAdjacentOnTiles(tilesInRegion, i, tile.isOn());
+                if (adjacentOnCount != touching) {
+                    return false; // Early termination if invalid number of adjacent tiles
+                }
+                System.out.println(tile.getColor());
+                if (tile.getColor() != 0) {
+                    // Check if other tiles with the same color and no number exist
+                    for (int j = 0; j < regionSize; j++) {
+                        if (i != j) {
+                            Tile otherTile = regionTiles[j];
+                            if (otherTile.getColor() == tile.getColor() && otherTile.getNumber() == 0 && otherTile.getTouching() == -1) {
+                                colorCount.put(tile.getColor(), colorCount.getOrDefault(tile.getColor(), 0) + 1);
+                                break; // No need to check further for this color
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int count : colorCount.values()) {
+            if (count == 1 || count >= 3) {
+                return false; // Early termination if invalid color count
+            }
+        }
+
+        return sumOfNumbers == regionSize || sumOfNumbers == 0; // Early termination if sum of numbers is not equal to the number of tiles
+    }
+
     // Helper method to count adjacent on tiles
-    private int countAdjacentOnTiles(int row, int col, boolean on) {
-        int onCount = 0;
+    private int countAdjacentOnTiles(List<int[]> tilesInRegion, int currentIndex, boolean isOn) {
+        int count = 0;
+        int[] currentIndexPos = tilesInRegion.get(currentIndex);
+        int numRows = this.numRows;
+        int numCols = this.numCols;
 
-        // Check the tile above
-        if (row - 1 >= 0 && (getTile(row - 1, col).isOn() == on)) {
-            onCount++;
+        int[][] adjacentOffsets = {
+                {-1, 0}, {1, 0}, {0, -1}, {0, 1}
+        };
+
+        for (int[] offset : adjacentOffsets) {
+            int newRow = currentIndexPos[0] + offset[0];
+            int newCol = currentIndexPos[1] + offset[1];
+
+            if (newRow >= 0 && newRow < numRows && newCol >= 0 && newCol < numCols) {
+                Tile adjacentTile = getTile(newRow, newCol);
+                if (adjacentTile.isOn() == isOn) {
+                    count++;
+                }
+            }
         }
 
-        // Check the tile below
-        if (row + 1 < numRows && (getTile(row + 1, col).isOn() == on)) {
-            onCount++;
-        }
-
-        // Check the tile to the left
-        if (col - 1 >= 0 && (getTile(row, col - 1).isOn() == on)) {
-            onCount++;
-        }
-
-        // Check the tile to the right
-        if (col + 1 < numCols && (getTile(row, col + 1).isOn() == on)) {
-            onCount++;
-        }
-
-        return onCount;
+        return count;
     }
 
 

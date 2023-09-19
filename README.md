@@ -5,6 +5,6 @@ Terrace2-solver is a simple utility program I created to aid in debugging maps f
 ## Features
 
 - **Right-click:** Cycle between "must be on" (black), "must be off" (white), and "neither" (grey).
-- **Left-click:** Cycle between different dotted square options.
+- **Left-click:** Cycle between different dotted square options, if the tle has a number it can be used by pluses.
 - **Number keys:** Change the color, with a default addition of "+" (the specific number doesn't matter, as long as it's the same for each color).
 - **Backtick (\`) and number key:** Add a dice block; note that you must select a color first.
